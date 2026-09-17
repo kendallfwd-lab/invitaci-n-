@@ -17,16 +17,12 @@ export function getResponses() {
 }
 
 export async function fetchResponses() {
-  try {
-    const response = await fetch(API_URL, { headers: { 'x-admin-key': ADMIN_CEDULA } });
-    if (!response.ok) throw new Error('API unavailable');
-    const rows = await response.json();
-    const normalized = rows.map(normalizeResponse);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
-    return normalized;
-  } catch {
-    return getResponses();
-  }
+  const response = await fetch(API_URL, { headers: { 'x-admin-key': ADMIN_CEDULA } });
+  const data = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(data?.error || 'No se pudo conectar con la base de datos.');
+  const normalized = data.map(normalizeResponse);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+  return normalized;
 }
 
 function normalizeResponse(response) {

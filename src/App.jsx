@@ -12,6 +12,7 @@ import {
   IceCreamBowl,
   LockKeyhole,
   MoonStar,
+  RefreshCw,
   ShieldCheck,
   Sparkles,
   UtensilsCrossed,
@@ -74,12 +75,21 @@ function downloadCalendarEvent({ date, name, planLabel }) {
 function AdminPanel() {
   const [responses, setResponses] = useState(() => getResponses());
   const [loadingResponses, setLoadingResponses] = useState(true);
+  const [databaseError, setDatabaseError] = useState('');
 
-  useEffect(() => {
+  function loadResponses() {
+    setLoadingResponses(true);
+    setDatabaseError('');
     fetchResponses()
       .then(setResponses)
+      .catch((error) => {
+        setDatabaseError(error.message);
+        setResponses(getResponses());
+      })
       .finally(() => setLoadingResponses(false));
-  }, []);
+  }
+
+  useEffect(loadResponses, []);
 
   function removeResponses() {
     if (!window.confirm('¿Borrar todas las respuestas guardadas en este navegador?')) return;
@@ -113,11 +123,16 @@ function AdminPanel() {
         </div>
 
         <div className="admin-actions">
+          <button className="ghost-btn" onClick={loadResponses} disabled={loadingResponses}>
+            <RefreshCw size={17} /> Actualizar
+          </button>
           <button className="ghost-btn" onClick={exportResponses} disabled={!responses.length}>
             <Download size={17} /> Exportar JSON
           </button>
           <button className="danger-btn" onClick={removeResponses} disabled={!responses.length}>Borrar todo</button>
         </div>
+
+        {databaseError && <p className="status error">{databaseError} Configura Supabase en Vercel para ver respuestas de todos los dispositivos.</p>}
 
         {responses.length ? (
           <div className="responses-table-wrap">
