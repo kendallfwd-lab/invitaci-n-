@@ -1,3 +1,4 @@
+Para revisar las respuestas guardadas en ese mismo navegador, abre el panel directamente o escribe la cédula administradora `605120994` en la pantalla inicial:
 # Amor React + GoMeta 💗
 
 Experiencia romántica hecha con React + Vite.

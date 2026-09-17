@@ -18,7 +18,7 @@ import {
 import FloatingHearts from './components/FloatingHearts.jsx';
 import ProgressDots from './components/ProgressDots.jsx';
 import { lookupCedula } from './services/cedulas.js';
-import { clearResponses, getResponses, saveResponse } from './services/responses.js';
+import { clearResponses, getResponses, isAdminCedula, saveResponse } from './services/responses.js';
 
 const plans = [
   { id: 'cafe', label: 'Café bonito', caption: 'Algo tranquilo para conversar', icon: Coffee },
@@ -109,7 +109,7 @@ function AdminPanel() {
 }
 
 export default function App() {
-  const isAdmin = new URLSearchParams(window.location.search).get('admin') === '1';
+  const [adminMode, setAdminMode] = useState(() => new URLSearchParams(window.location.search).get('admin') === '1');
   const [step, setStep] = useState(1);
   const [cedula, setCedula] = useState('');
   const [name, setName] = useState('');
@@ -128,7 +128,14 @@ export default function App() {
     event.preventDefault();
     setError('');
     setValidationBlocked(false);
+
+    if (isAdminCedula(cedula)) {
+      setAdminMode(true);
+      return;
+    }
+
     setLoading(true);
+  if (adminMode) return <AdminPanel />;
 
     try {
       const result = await lookupCedula(cedula);
@@ -160,7 +167,7 @@ export default function App() {
     setStep(4);
   }
 
-  if (isAdmin) return <AdminPanel />;
+  if (adminMode) return <AdminPanel />;
 
   return (
     <main className="app-shell">
@@ -219,7 +226,7 @@ export default function App() {
                 </motion.p>
               )}
 
-              <p className="privacy" id="privacy-note">La cédula se usa únicamente para consultar esta invitación y no se guarda en la página.</p>
+              <p className="privacy" id="privacy-note">La cédula se usa para consultar la invitación. La respuesta solo se guarda cuando se confirma un plan.</p>
             </motion.div>
           )}
 
