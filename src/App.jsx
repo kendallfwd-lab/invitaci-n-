@@ -268,7 +268,7 @@ export default function App() {
                     onChange={(event) => setCedula(event.target.value)}
                     inputMode="text"
                     autoComplete="off"
-                    placeholder="Cédula o clave administrativa"
+                    placeholder="Escribe tu cédula"
                     aria-describedby="privacy-note"
                   />
                   <Heart size={18} />
