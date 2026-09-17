@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import {
   CalendarDays,
+  CalendarPlus,
   Check,
   ChevronRight,
   Coffee,
@@ -26,6 +27,8 @@ const plans = [
   { id: 'helado', label: 'Helado', caption: 'Simple, dulce y sin presión', icon: IceCreamBowl },
   { id: 'paseo', label: 'Paseo', caption: 'Caminar, hablar y ver qué pasa', icon: MoonStar },
 ];
+
+const GOOGLE_CALENDAR_URL = 'https://calendar.google.com/calendar/u/0/r?hl=es&pli=1';
 
 const screenMotion = {
   initial: { opacity: 0, y: 28, scale: 0.985 },
@@ -307,6 +310,10 @@ export default function App() {
                 <div className="summary-divider" />
                 <div><span>Plan</span><strong>{selectedPlan?.label}</strong></div>
               </div>
+
+              <a className="calendar-btn" href={GOOGLE_CALENDAR_URL} target="_blank" rel="noreferrer">
+                <CalendarPlus size={18} /> Agendar en Google Calendar
+              </a>
 
               <p className="signature">Con cariño, alguien que tenía ganas de preguntarte esto. ♥</p>
             </motion.div>

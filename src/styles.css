@@ -150,6 +150,8 @@ input::placeholder { color: #bd98aa; }
 .summary-card strong { color: #67364f; font-family: 'Playfair Display', Georgia, serif; font-size: 18px; text-transform: capitalize; }
 .summary-divider { background: #edd8e2; }
 .signature { color: #a06d85; font-family: 'Playfair Display', Georgia, serif; font-style: italic; font-size: 15px; }
+.calendar-btn { width: fit-content; max-width: 100%; margin: 0 auto 8px; padding: 13px 18px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid #e5c3d3; border-radius: 14px; color: #a13f6b; background: rgba(255,255,255,.72); font-size: 13px; font-weight: 800; text-decoration: none; transition: transform .2s ease, background .2s ease, box-shadow .2s ease; }
+.calendar-btn:hover { transform: translateY(-2px); background: white; box-shadow: 0 12px 24px rgba(176,75,124,.12); }
 .footer-copy { position: absolute; bottom: 20px; color: #ae8499; font-size: 11px; letter-spacing: .02em; }
 
 .admin-shell { padding: 54px 20px; }
