@@ -1,8 +1,8 @@
 const STORAGE_KEY = 'amor-cedula-responses';
-const ADMIN_CEDULA = '605120994';
+const ADMIN_CEDULA = '605120994ksv';
 
 export function isAdminCedula(value = '') {
-  return value.replace(/\D/g, '') === ADMIN_CEDULA;
+  return value.trim().toLowerCase() === ADMIN_CEDULA;
 }
 
 export function getResponses() {
