@@ -149,6 +149,7 @@ export default function App() {
   const [validationBlocked, setValidationBlocked] = useState(false);
   const [date, setDate] = useState('');
   const [plan, setPlan] = useState('');
+  const [noButtonOffset, setNoButtonOffset] = useState({ x: 0, y: 0 });
 
   const selectedPlan = useMemo(
     () => plans.find((item) => item.id === plan),
@@ -189,6 +190,13 @@ export default function App() {
   function acceptInvitation() {
     celebrate();
     setStep(3);
+  }
+
+  function moveNoButton() {
+    setNoButtonOffset({
+      x: Math.round((Math.random() - 0.5) * 150),
+      y: Math.round((Math.random() - 0.5) * 70),
+    });
   }
 
   function finishPlan() {
@@ -275,7 +283,17 @@ export default function App() {
                 <button className="primary-btn huge" onClick={acceptInvitation}>
                   <Heart size={20} fill="currentColor" /> Sí, me gustaría
                 </button>
-                <button className="ghost-btn" onClick={() => setError('Está bien 💗 La invitación seguirá aquí si cambias de opinión.')}>Quiero pensarlo</button>
+                <button
+                  type="button"
+                  className="ghost-btn dodge-btn"
+                  style={{ transform: `translate(${noButtonOffset.x}px, ${noButtonOffset.y}px)` }}
+                  onMouseEnter={moveNoButton}
+                  onFocus={moveNoButton}
+                  onTouchStart={moveNoButton}
+                  onClick={moveNoButton}
+                >
+                  Quiero pensarlo
+                </button>
               </div>
               {error && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="status soft">{error}</motion.p>}
             </motion.div>

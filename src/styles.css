@@ -113,6 +113,7 @@ input::placeholder { color: #bd98aa; }
 .primary-btn:disabled { cursor: not-allowed; opacity: .48; box-shadow: none; }
 .primary-btn.huge { width: min(420px, 100%); margin: 0; }
 .ghost-btn { min-height: 52px; padding: 0 22px; border-radius: 16px; color: #8f5a73; background: rgba(255,255,255,.72); border: 1px solid #efd7e2; font-weight: 700; }
+.dodge-btn { position: relative; transition: transform .22s cubic-bezier(.2,.8,.3,1), background .2s ease; }
 .choice-row { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
 
 .loader { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,.42); border-top-color: white; border-radius: 50%; animation: spin .7s linear infinite; }
