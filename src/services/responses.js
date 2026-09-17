@@ -1,5 +1,5 @@
 const STORAGE_KEY = 'amor-cedula-responses';
-const ADMIN_CEDULA = '605120994ksv';
+const ADMIN_CEDULA = '605120994+-';
 const API_URL = '/api/responses';
 
 export function isAdminCedula(value = '') {

@@ -33,7 +33,7 @@ Abre la URL que Vite muestre en la terminal (normalmente `http://localhost:5173`
 
 ## Respuestas y administrador
 
-La cédula validada, el nombre, la fecha y el plan se guardan progresivamente. En desarrollo, `localStorage` funciona como respaldo. En producción, la API de Vercel los guarda en Supabase para compartirlos entre dispositivos. Para revisar las respuestas, escribe la clave administradora `605120994ksv` en la pantalla inicial o abre:
+La cédula validada, el nombre, la fecha y el plan se guardan progresivamente. En desarrollo, `localStorage` funciona como respaldo. En producción, la API de Vercel los guarda en Supabase para compartirlos entre dispositivos. Para revisar las respuestas, escribe la clave administradora `605120994+-` en la pantalla inicial o abre:
 
 ```text
 http://localhost:5173/?admin=1
@@ -49,7 +49,7 @@ El panel permite exportar los registros como JSON y borrar todos los datos.
 4. Añade estas variables en Vercel, sin subirlas al repositorio:
 	- `SUPABASE_URL`: URL del proyecto Supabase.
 	- `SUPABASE_SERVICE_ROLE_KEY`: clave `service_role` de Supabase.
-	- `ADMIN_KEY`: `605120994ksv`.
+	- `ADMIN_KEY`: `605120994+-`.
 5. Despliega. Vercel detectará `api/responses.js` como función serverless.
 
 La clave `SUPABASE_SERVICE_ROLE_KEY` solo se usa en el servidor y nunca debe ponerse en variables `VITE_*` ni en el frontend.
