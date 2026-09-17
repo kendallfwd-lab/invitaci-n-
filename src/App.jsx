@@ -17,6 +17,7 @@ import {
   Sparkles,
   UtensilsCrossed,
 } from 'lucide-react';
+import { Link, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import FloatingHearts from './components/FloatingHearts.jsx';
 import ProgressDots from './components/ProgressDots.jsx';
 import { lookupCedula } from './services/cedulas.js';
@@ -30,6 +31,8 @@ const plans = [
 ];
 
 const GOOGLE_CALENDAR_URL = 'https://calendar.google.com/calendar/u/0/r?hl=es&pli=1';
+const ADMIN_SESSION_KEY = 'amor-admin-auth';
+const ADMIN_PASSWORD = '17082008';
 
 const screenMotion = {
   initial: { opacity: 0, y: 28, scale: 0.985 },
@@ -44,6 +47,130 @@ function celebrate() {
     confetti({ particleCount: 70, spread: 100, origin: { x: 0.25, y: 0.55 } });
     confetti({ particleCount: 70, spread: 100, origin: { x: 0.75, y: 0.55 } });
   }, 220);
+}
+
+function setAdminAuth(isAuthenticated) {
+  if (isAuthenticated) {
+    sessionStorage.setItem(ADMIN_SESSION_KEY, '1');
+    return;
+  }
+
+  sessionStorage.removeItem(ADMIN_SESSION_KEY);
+}
+
+function getAdminAuth() {
+  return sessionStorage.getItem(ADMIN_SESSION_KEY) === '1';
+}
+
+function PrivateRoute({ children }) {
+  const location = useLocation();
+
+  if (!getAdminAuth()) {
+    return <Navigate to="/admin/login" replace state={{ from: location.pathname }} />;
+  }
+
+  return children;
+}
+
+function AdminLoginPage() {
+  const [code, setCode] = useState('');
+  const [password, setPassword] = useState('');
+  const [step, setStep] = useState(1);
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const from = location.state?.from || '/admin';
+
+  function handleCodeSubmit(event) {
+    event.preventDefault();
+    setError('');
+
+    if (!isAdminCedula(code)) {
+      setError('La clave administrativa no es válida.');
+      return;
+    }
+
+    setStep(2);
+  }
+
+  function handlePasswordSubmit(event) {
+    event.preventDefault();
+    setError('');
+
+    if (password !== ADMIN_PASSWORD) {
+      setError('La contraseña es incorrecta.');
+      return;
+    }
+
+    setAdminAuth(true);
+    navigate(from, { replace: true });
+  }
+
+  return (
+    <main className="app-shell admin-shell">
+      <div className="aurora aurora-one" />
+      <div className="aurora aurora-two" />
+      <div className="noise" />
+
+      <section className="admin-card admin-login-card">
+        <p className="eyebrow"><ShieldCheck size={15} /> Acceso privado</p>
+        <h1>Panel administrativo</h1>
+        <p className="lead admin-lead">
+          {step === 1 ? 'Introduce la clave administrativa para continuar.' : 'Ahora ingresa la contraseña del administrador.'}
+        </p>
+
+        {step === 1 ? (
+          <form onSubmit={handleCodeSubmit} className="access-form" style={{ maxWidth: 430 }}>
+            <label htmlFor="admin-key">Clave administrativa</label>
+            <div className="input-wrap">
+              <input
+                id="admin-key"
+                type="password"
+                value={code}
+                onChange={(event) => setCode(event.target.value)}
+                placeholder="Escribe la clave"
+                autoComplete="off"
+              />
+              <LockKeyhole size={18} />
+            </div>
+
+            <button className="primary-btn" type="submit" disabled={!code.trim()}>
+              <ShieldCheck size={18} /> Continuar
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handlePasswordSubmit} className="access-form" style={{ maxWidth: 430 }}>
+            <label htmlFor="admin-password">Contraseña</label>
+            <div className="input-wrap">
+              <input
+                id="admin-password"
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="Escribe la contraseña"
+                autoComplete="off"
+              />
+              <LockKeyhole size={18} />
+            </div>
+
+            <button className="primary-btn" type="submit" disabled={!password.trim()}>
+              <ShieldCheck size={18} /> Ver datos
+            </button>
+          </form>
+        )}
+
+        {error && <p className="status error">{error}</p>}
+
+        <div className="admin-actions admin-actions-login">
+          <button type="button" className="ghost-btn" onClick={() => { setError(''); setPassword(''); setStep(1); setCode(''); }}>
+            Reiniciar
+          </button>
+          <Link className="ghost-btn ghost-btn-center" to="/">Volver a la invitación</Link>
+        </div>
+      </section>
+    </main>
+  );
 }
 
 function downloadCalendarEvent({ date, name, planLabel }) {
@@ -76,6 +203,7 @@ function AdminPanel() {
   const [responses, setResponses] = useState(() => getResponses());
   const [loadingResponses, setLoadingResponses] = useState(true);
   const [databaseError, setDatabaseError] = useState('');
+  const navigate = useNavigate();
 
   function loadResponses() {
     setLoadingResponses(true);
@@ -107,6 +235,11 @@ function AdminPanel() {
     URL.revokeObjectURL(url);
   }
 
+  function logout() {
+    setAdminAuth(false);
+    navigate('/admin/login', { replace: true });
+  }
+
   return (
     <main className="app-shell admin-shell">
       <div className="aurora aurora-one" />
@@ -130,6 +263,7 @@ function AdminPanel() {
             <Download size={17} /> Exportar JSON
           </button>
           <button className="danger-btn" onClick={removeResponses} disabled={!responses.length}>Borrar todo</button>
+          <button className="ghost-btn" onClick={logout}>Cerrar sesión</button>
         </div>
 
         {databaseError && <p className="status error">{databaseError} Configura Supabase en Vercel para ver respuestas de todos los dispositivos.</p>}
@@ -154,14 +288,14 @@ function AdminPanel() {
           </div>
         ) : <p className="empty-state">{loadingResponses ? 'Cargando respuestas...' : 'Todavía no hay respuestas guardadas.'}</p>}
 
-        <a className="back-link" href={window.location.pathname}>Volver a la invitación</a>
+        <Link className="back-link" to="/">Volver a la invitación</Link>
       </section>
     </main>
   );
 }
 
-export default function App() {
-  const [adminMode, setAdminMode] = useState(() => new URLSearchParams(window.location.search).get('admin') === '1');
+function InvitationExperience() {
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [cedula, setCedula] = useState('');
   const [name, setName] = useState('');
@@ -171,6 +305,13 @@ export default function App() {
   const [date, setDate] = useState('');
   const [plan, setPlan] = useState('');
   const [noButtonOffset, setNoButtonOffset] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('admin') === '1') {
+      navigate('/admin/login', { replace: true });
+    }
+  }, [navigate]);
 
   const selectedPlan = useMemo(
     () => plans.find((item) => item.id === plan),
@@ -183,7 +324,8 @@ export default function App() {
     setValidationBlocked(false);
 
     if (isAdminCedula(cedula)) {
-      setAdminMode(true);
+      setAdminAuth(true);
+      navigate('/admin', { replace: true });
       return;
     }
 
@@ -195,7 +337,6 @@ export default function App() {
       saveResponse({ cedula: cedula.replace(/\D/g, ''), name: result.firstName, status: 'consulted' });
 
       if (!result.isNotMoroso) {
-        // No exponemos detalles tributarios en pantalla; simplemente no avanzamos.
         setValidationBlocked(true);
         return;
       }
@@ -226,8 +367,6 @@ export default function App() {
     celebrate();
     setStep(4);
   }
-
-  if (adminMode) return <AdminPanel />;
 
   return (
     <main className="app-shell">
@@ -404,5 +543,23 @@ export default function App() {
 
       <p className="footer-copy">Una invitación sin presión, solo con intención bonita ♥</p>
     </main>
+  );
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<InvitationExperience />} />
+      <Route path="/admin/login" element={<AdminLoginPage />} />
+      <Route
+        path="/admin"
+        element={
+          <PrivateRoute>
+            <AdminPanel />
+          </PrivateRoute>
+        }
+      />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
