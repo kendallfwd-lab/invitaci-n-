@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import {
@@ -19,7 +19,7 @@ import {
 import FloatingHearts from './components/FloatingHearts.jsx';
 import ProgressDots from './components/ProgressDots.jsx';
 import { lookupCedula } from './services/cedulas.js';
-import { clearResponses, getResponses, isAdminCedula, saveResponse } from './services/responses.js';
+import { clearResponses, fetchResponses, getResponses, isAdminCedula, saveResponse } from './services/responses.js';
 
 const plans = [
   { id: 'cafe', label: 'Café bonito', caption: 'Algo tranquilo para conversar', icon: Coffee },
@@ -73,6 +73,13 @@ function downloadCalendarEvent({ date, name, planLabel }) {
 
 function AdminPanel() {
   const [responses, setResponses] = useState(() => getResponses());
+  const [loadingResponses, setLoadingResponses] = useState(true);
+
+  useEffect(() => {
+    fetchResponses()
+      .then(setResponses)
+      .finally(() => setLoadingResponses(false));
+  }, []);
 
   function removeResponses() {
     if (!window.confirm('¿Borrar todas las respuestas guardadas en este navegador?')) return;
@@ -100,7 +107,7 @@ function AdminPanel() {
           <div>
             <p className="eyebrow"><ShieldCheck size={15} /> Área privada</p>
             <h1>Respuestas</h1>
-            <p className="lead admin-lead">Las respuestas guardadas en este navegador.</p>
+            <p className="lead admin-lead">Respuestas guardadas en la base de datos.</p>
           </div>
           <strong className="response-count">{responses.length}</strong>
         </div>
@@ -115,8 +122,7 @@ function AdminPanel() {
         {responses.length ? (
           <div className="responses-table-wrap">
             <table className="responses-table">
-              <thead><tr><th>Nombre</th><th>Cédula</th><th>Fecha</th><th>Plan</th><th>Recibida</th></tr></thead>
-                          <thead><tr><th>Nombre</th><th>Cédula</th><th>Fecha</th><th>Plan</th><th>Estado</th><th>Actualizada</th></tr></thead>
+              <thead><tr><th>Nombre</th><th>Cédula</th><th>Fecha</th><th>Plan</th><th>Estado</th><th>Actualizada</th></tr></thead>
               <tbody>
                 {responses.map((response) => (
                   <tr key={response.id}>
@@ -131,7 +137,7 @@ function AdminPanel() {
               </tbody>
             </table>
           </div>
-        ) : <p className="empty-state">Todavía no hay respuestas guardadas.</p>}
+        ) : <p className="empty-state">{loadingResponses ? 'Cargando respuestas...' : 'Todavía no hay respuestas guardadas.'}</p>}
 
         <a className="back-link" href={window.location.pathname}>Volver a la invitación</a>
       </section>

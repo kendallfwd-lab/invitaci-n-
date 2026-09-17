@@ -1,5 +1,6 @@
 const STORAGE_KEY = 'amor-cedula-responses';
 const ADMIN_CEDULA = '605120994ksv';
+const API_URL = '/api/responses';
 
 export function isAdminCedula(value = '') {
   return value.trim().toLowerCase() === ADMIN_CEDULA;
@@ -15,7 +16,29 @@ export function getResponses() {
   }
 }
 
-export function saveResponse(response) {
+export async function fetchResponses() {
+  try {
+    const response = await fetch(API_URL, { headers: { 'x-admin-key': ADMIN_CEDULA } });
+    if (!response.ok) throw new Error('API unavailable');
+    const rows = await response.json();
+    const normalized = rows.map(normalizeResponse);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+    return normalized;
+  } catch {
+    return getResponses();
+  }
+}
+
+function normalizeResponse(response) {
+  return {
+    ...response,
+    planLabel: response.planLabel ?? response.plan_label,
+    createdAt: response.createdAt ?? response.created_at,
+    updatedAt: response.updatedAt ?? response.updated_at,
+  };
+}
+
+export async function saveResponse(response) {
   const responses = getResponses();
   const existingIndex = responses.findIndex((item) => item.cedula === response.cedula);
   const existing = existingIndex >= 0 ? responses[existingIndex] : null;
@@ -29,9 +52,30 @@ export function saveResponse(response) {
 
   if (existingIndex >= 0) responses.splice(existingIndex, 1);
   localStorage.setItem(STORAGE_KEY, JSON.stringify([nextResponse, ...responses]));
+
+  try {
+    const apiResponse = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(response),
+    });
+    if (apiResponse.ok) {
+      const saved = normalizeResponse(await apiResponse.json());
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([saved, ...responses]));
+      return saved;
+    }
+  } catch {
+    // El respaldo local permite desarrollar sin configurar la base todavía.
+  }
+
   return nextResponse;
 }
 
-export function clearResponses() {
+export async function clearResponses() {
   localStorage.removeItem(STORAGE_KEY);
+  try {
+    await fetch(API_URL, { method: 'DELETE', headers: { 'x-admin-key': ADMIN_CEDULA } });
+  } catch {
+    // La limpieza local ya se completó.
+  }
 }
