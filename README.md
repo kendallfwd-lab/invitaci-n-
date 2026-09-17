@@ -30,9 +30,15 @@ npm run dev
 
 Abre la URL que Vite muestre en la terminal (normalmente `http://localhost:5173`).
 
-## Privacidad
+## Respuestas y administrador
 
-La aplicación no guarda la cédula en `localStorage`, cookies ni base de datos. El valor solo se utiliza para realizar la consulta durante la sesión actual.
+Al completar la invitación, la respuesta se guarda en `localStorage` del navegador. Para revisar las respuestas guardadas en ese mismo navegador, abre:
+
+```text
+http://localhost:5173/?admin=1
+```
+
+El panel permite exportar los registros como JSON y borrar todos los datos. Esta implementación es local: no comparte respuestas entre dispositivos ni reemplaza una base de datos para producción.
 
 ## API
 

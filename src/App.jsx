@@ -6,16 +6,19 @@ import {
   Check,
   ChevronRight,
   Coffee,
+  Download,
   Heart,
   IceCreamBowl,
   LockKeyhole,
   MoonStar,
+  ShieldCheck,
   Sparkles,
   UtensilsCrossed,
 } from 'lucide-react';
 import FloatingHearts from './components/FloatingHearts.jsx';
 import ProgressDots from './components/ProgressDots.jsx';
 import { lookupCedula } from './services/cedulas.js';
+import { clearResponses, getResponses, saveResponse } from './services/responses.js';
 
 const plans = [
   { id: 'cafe', label: 'Café bonito', caption: 'Algo tranquilo para conversar', icon: Coffee },
@@ -39,7 +42,74 @@ function celebrate() {
   }, 220);
 }
 
+function AdminPanel() {
+  const [responses, setResponses] = useState(() => getResponses());
+
+  function removeResponses() {
+    if (!window.confirm('¿Borrar todas las respuestas guardadas en este navegador?')) return;
+    clearResponses();
+    setResponses([]);
+  }
+
+  function exportResponses() {
+    const file = new Blob([JSON.stringify(responses, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(file);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'respuestas-invitacion.json';
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  return (
+    <main className="app-shell admin-shell">
+      <div className="aurora aurora-one" />
+      <div className="aurora aurora-two" />
+      <div className="noise" />
+      <section className="admin-card">
+        <div className="admin-heading">
+          <div>
+            <p className="eyebrow"><ShieldCheck size={15} /> Área privada</p>
+            <h1>Respuestas</h1>
+            <p className="lead admin-lead">Las respuestas guardadas en este navegador.</p>
+          </div>
+          <strong className="response-count">{responses.length}</strong>
+        </div>
+
+        <div className="admin-actions">
+          <button className="ghost-btn" onClick={exportResponses} disabled={!responses.length}>
+            <Download size={17} /> Exportar JSON
+          </button>
+          <button className="danger-btn" onClick={removeResponses} disabled={!responses.length}>Borrar todo</button>
+        </div>
+
+        {responses.length ? (
+          <div className="responses-table-wrap">
+            <table className="responses-table">
+              <thead><tr><th>Nombre</th><th>Cédula</th><th>Fecha</th><th>Plan</th><th>Recibida</th></tr></thead>
+              <tbody>
+                {responses.map((response) => (
+                  <tr key={response.id}>
+                    <td>{response.name}</td>
+                    <td>{response.cedula}</td>
+                    <td>{new Date(`${response.date}T12:00:00`).toLocaleDateString('es-CR')}</td>
+                    <td>{response.planLabel}</td>
+                    <td>{new Date(response.createdAt).toLocaleString('es-CR')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : <p className="empty-state">Todavía no hay respuestas guardadas.</p>}
+
+        <a className="back-link" href={window.location.pathname}>Volver a la invitación</a>
+      </section>
+    </main>
+  );
+}
+
 export default function App() {
+  const isAdmin = new URLSearchParams(window.location.search).get('admin') === '1';
   const [step, setStep] = useState(1);
   const [cedula, setCedula] = useState('');
   const [name, setName] = useState('');
@@ -85,9 +155,12 @@ export default function App() {
 
   function finishPlan() {
     if (!date || !plan) return;
+    saveResponse({ cedula, name, date, plan, planLabel: selectedPlan?.label });
     celebrate();
     setStep(4);
   }
+
+  if (isAdmin) return <AdminPanel />;
 
   return (
     <main className="app-shell">
