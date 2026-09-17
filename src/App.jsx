@@ -45,6 +45,32 @@ function celebrate() {
   }, 220);
 }
 
+function downloadCalendarEvent({ date, name, planLabel }) {
+  const startDate = date.replaceAll('-', '');
+  const nextDate = new Date(`${date}T12:00:00`);
+  nextDate.setDate(nextDate.getDate() + 1);
+  const endDate = nextDate.toISOString().slice(0, 10).replaceAll('-', '');
+  const event = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Amor Cedula//Invitacion//ES',
+    'BEGIN:VEVENT',
+    `DTSTART;VALUE=DATE:${startDate}`,
+    `DTEND;VALUE=DATE:${endDate}`,
+    `SUMMARY:${planLabel} con ${name}`,
+    'DESCRIPTION:Una cita bonita para conocernos mejor.',
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ].join('\r\n');
+  const blob = new Blob([event], { type: 'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'cita-invitacion.ics';
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
 function AdminPanel() {
   const [responses, setResponses] = useState(() => getResponses());
 
@@ -327,6 +353,9 @@ export default function App() {
               <a className="calendar-btn" href={GOOGLE_CALENDAR_URL} target="_blank" rel="noreferrer">
                 <CalendarPlus size={18} /> Agendar en Google Calendar
               </a>
+              <button className="calendar-btn device-calendar-btn" onClick={() => downloadCalendarEvent({ date, name, planLabel: selectedPlan?.label })}>
+                <Download size={18} /> Guardar en el calendario del dispositivo
+              </button>
 
               <p className="signature">Con cariño, alguien que tenía ganas de preguntarte esto. ♥</p>
             </motion.div>
