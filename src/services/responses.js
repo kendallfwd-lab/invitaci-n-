@@ -20,7 +20,7 @@ export async function fetchResponses() {
   const response = await fetch(API_URL, { headers: { 'x-admin-key': ADMIN_CEDULA } });
   const data = await response.json().catch(() => null);
   if (!response.ok) throw new Error(data?.error || 'No se pudo conectar con la base de datos.');
-  const normalized = data.map(normalizeResponse);
+  const normalized = (Array.isArray(data) ? data : []).map(normalizeResponse);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
   return normalized;
 }
