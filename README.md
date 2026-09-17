@@ -33,7 +33,7 @@ Abre la URL que Vite muestre en la terminal (normalmente `http://localhost:5173`
 
 ## Respuestas y administrador
 
-Al completar la invitación, la respuesta se guarda en `localStorage` del navegador. Para revisar las respuestas guardadas en ese mismo navegador, abre:
+La cédula validada, el nombre, la fecha y el plan se guardan progresivamente en `localStorage` del navegador. Para revisar las respuestas guardadas en ese mismo navegador, abre:
 
 ```text
 http://localhost:5173/?admin=1

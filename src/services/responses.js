@@ -16,12 +16,19 @@ export function getResponses() {
 }
 
 export function saveResponse(response) {
+  const responses = getResponses();
+  const existingIndex = responses.findIndex((item) => item.cedula === response.cedula);
+  const existing = existingIndex >= 0 ? responses[existingIndex] : null;
   const nextResponse = {
+    ...existing,
     ...response,
-    id: crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`,
-    createdAt: new Date().toISOString(),
+    id: existing?.id || crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`,
+    createdAt: existing?.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify([nextResponse, ...getResponses()]));
+
+  if (existingIndex >= 0) responses.splice(existingIndex, 1);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([nextResponse, ...responses]));
   return nextResponse;
 }
 

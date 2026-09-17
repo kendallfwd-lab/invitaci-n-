@@ -90,6 +90,7 @@ function AdminPanel() {
           <div className="responses-table-wrap">
             <table className="responses-table">
               <thead><tr><th>Nombre</th><th>Cédula</th><th>Fecha</th><th>Plan</th><th>Recibida</th></tr></thead>
+                          <thead><tr><th>Nombre</th><th>Cédula</th><th>Fecha</th><th>Plan</th><th>Estado</th><th>Actualizada</th></tr></thead>
               <tbody>
                 {responses.map((response) => (
                   <tr key={response.id}>
@@ -97,7 +98,8 @@ function AdminPanel() {
                     <td>{response.cedula}</td>
                     <td>{new Date(`${response.date}T12:00:00`).toLocaleDateString('es-CR')}</td>
                     <td>{response.planLabel}</td>
-                    <td>{new Date(response.createdAt).toLocaleString('es-CR')}</td>
+                    <td>{response.status === 'completed' ? 'Completada' : 'En progreso'}</td>
+                    <td>{new Date(response.updatedAt || response.createdAt).toLocaleString('es-CR')}</td>
                   </tr>
                 ))}
               </tbody>
@@ -138,11 +140,11 @@ export default function App() {
     }
 
     setLoading(true);
-  if (adminMode) return <AdminPanel />;
 
     try {
       const result = await lookupCedula(cedula);
       setName(result.firstName);
+      saveResponse({ cedula: cedula.replace(/\D/g, ''), name: result.firstName, status: 'consulted' });
 
       if (!result.isNotMoroso) {
         // No exponemos detalles tributarios en pantalla; simplemente no avanzamos.
@@ -165,7 +167,7 @@ export default function App() {
 
   function finishPlan() {
     if (!date || !plan) return;
-    saveResponse({ cedula, name, date, plan, planLabel: selectedPlan?.label });
+    saveResponse({ cedula: cedula.replace(/\D/g, ''), name, date, plan, planLabel: selectedPlan?.label, status: 'completed' });
     celebrate();
     setStep(4);
   }
@@ -229,7 +231,7 @@ export default function App() {
                 </motion.p>
               )}
 
-              <p className="privacy" id="privacy-note">La cédula se usa para consultar la invitación. La respuesta solo se guarda cuando se confirma un plan.</p>
+              <p className="privacy" id="privacy-note">La información se guarda para que el administrador pueda ver el avance de la invitación.</p>
             </motion.div>
           )}
 
@@ -261,7 +263,15 @@ export default function App() {
 
               <div className="date-panel">
                 <label htmlFor="date">¿Qué día te queda bonito?</label>
-                <input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+                <input
+                  id="date"
+                  type="date"
+                  value={date}
+                  onChange={(e) => {
+                    setDate(e.target.value);
+                    saveResponse({ cedula: cedula.replace(/\D/g, ''), name, date: e.target.value, status: 'date-selected' });
+                  }}
+                />
               </div>
 
               <div className="plans-grid">
@@ -275,7 +285,10 @@ export default function App() {
                       whileHover={{ y: -6 }}
                       whileTap={{ scale: 0.98 }}
                       className={active ? 'plan-card selected' : 'plan-card'}
-                      onClick={() => setPlan(item.id)}
+                      onClick={() => {
+                        setPlan(item.id);
+                        saveResponse({ cedula: cedula.replace(/\D/g, ''), name, plan: item.id, planLabel: item.label, status: 'plan-selected' });
+                      }}
                     >
                       <div className="plan-icon"><Icon size={24} /></div>
                       <strong>{item.label}</strong>
